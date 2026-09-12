@@ -41,7 +41,7 @@
         "BSD-4-Clause"
     ],
     "require": {
-        "php": ">=5.2.0"
+        "php": ">=8.0"
     },
     "autoload": {
         "classmap": ["idiorm.php"]

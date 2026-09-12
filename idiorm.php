@@ -2209,26 +2209,26 @@
         // ---  ArrayAccess  --- //
         // --------------------- //
 
-        #[\ReturnTypeWillChange]
-        public function offsetExists($key) {
+        // Real return types rather than #[\ReturnTypeWillChange], here and in
+        // IdiormResultSet. The attribute only silences the PHP 8.1 deprecation;
+        // idiorm requires PHP 8 now, so there is no older runtime left to keep.
+
+        public function offsetExists($key): bool {
             return array_key_exists($key, $this->_data);
         }
 
-        #[\ReturnTypeWillChange]
-        public function offsetGet($key) {
+        public function offsetGet($key): mixed {
             return $this->get($key);
         }
 
-        #[\ReturnTypeWillChange]
-        public function offsetSet($key, $value) {
+        public function offsetSet($key, $value): void {
             if(is_null($key)) {
                 throw new InvalidArgumentException('You must specify a key/array index.');
             }
             $this->set($key, $value);
         }
 
-        #[\ReturnTypeWillChange]
-        public function offsetUnset($key) {
+        public function offsetUnset($key): void {
             unset($this->_data[$key]);
             unset($this->_dirty_fields[$key]);
         }
@@ -2406,7 +2406,7 @@
      * @method null setResults(array $results)
      * @method array getResults()
      */
-    class IdiormResultSet implements Countable, IteratorAggregate, ArrayAccess, Serializable {
+    class IdiormResultSet implements Countable, IteratorAggregate, ArrayAccess {
         /**
          * The current result set as an array
          * @var array
@@ -2449,8 +2449,7 @@
          * Get the number of records in the result set
          * @return int
          */
-        #[\ReturnTypeWillChange]
-        public function count() {
+        public function count(): int {
             return count($this->_results);
         }
 
@@ -2459,8 +2458,7 @@
          * over the result set.
          * @return \ArrayIterator
          */
-        #[\ReturnTypeWillChange]
-        public function getIterator() {
+        public function getIterator(): ArrayIterator {
             return new ArrayIterator($this->_results);
         }
 
@@ -2469,8 +2467,7 @@
          * @param int|string $offset
          * @return bool
          */
-        #[\ReturnTypeWillChange]
-        public function offsetExists($offset) {
+        public function offsetExists($offset): bool {
             return isset($this->_results[$offset]);
         }
 
@@ -2479,8 +2476,7 @@
          * @param int|string $offset
          * @return mixed
          */
-        #[\ReturnTypeWillChange]
-        public function offsetGet($offset) {
+        public function offsetGet($offset): mixed {
             return $this->_results[$offset];
         }
         
@@ -2489,8 +2485,7 @@
          * @param int|string $offset
          * @param mixed $value
          */
-        #[\ReturnTypeWillChange]
-        public function offsetSet($offset, $value) {
+        public function offsetSet($offset, $value): void {
             $this->_results[$offset] = $value;
         }
 
@@ -2498,21 +2493,36 @@
          * ArrayAccess
          * @param int|string $offset
          */
-        #[\ReturnTypeWillChange]
-        public function offsetUnset($offset) {
+        public function offsetUnset($offset): void {
             unset($this->_results[$offset]);
         }
 
-        public function __serialize() {
-            return $this->serialize();
-        }
-
-        public function __unserialize($data) {
-            $this->unserialize($data);
+        /**
+         * The magic pair PHP 7.4 added, which it uses in preference to
+         * Serializable whenever both exist.
+         *
+         * __serialize() must return an array. The version this replaces returned
+         * the string from serialize(), so serialize() on a result set threw a
+         * TypeError from PHP 7.4 on; and __unserialize() discarded what it
+         * decoded, so the results never came back either.
+         *
+         * @return array
+         */
+        public function __serialize(): array {
+            return $this->_results;
         }
 
         /**
-         * Serializable
+         * @param array $data
+         * @return void
+         */
+        public function __unserialize(array $data): void {
+            $this->_results = $data;
+        }
+
+        /**
+         * Kept as an ordinary method now the class no longer implements
+         * Serializable: it was public API and may be called directly.
          * @return string
          */
         public function serialize() {
@@ -2520,7 +2530,7 @@
         }
 
         /**
-         * Serializable
+         * Kept as an ordinary method, like serialize() above.
          * @param string $serialized
          * @return array
          */

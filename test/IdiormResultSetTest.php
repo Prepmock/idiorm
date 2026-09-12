@@ -78,4 +78,21 @@ class IdiormResultSetTest extends \PHPUnit\Framework\TestCase {
         }
     }
     
+
+    public function testSerializeAndUnserializeKeepTheResults() {
+        $result_set = array('item' => 'first', 'item2' => 'second');
+        $IdiormResultSet = new IdiormResultSet($result_set);
+
+        $restored = unserialize(serialize($IdiormResultSet));
+
+        $this->assertInstanceOf('IdiormResultSet', $restored);
+        $this->assertSame($result_set, $restored->get_results());
+    }
+
+    public function testDoesNotImplementTheDeprecatedSerializableInterface() {
+        // __serialize() and __unserialize() replace it. Implementing both is
+        // what let a __serialize() returning a string go unnoticed: nothing
+        // serialized a result set once PHP started preferring the magic pair.
+        $this->assertNotInstanceOf('Serializable', new IdiormResultSet());
+    }
 }

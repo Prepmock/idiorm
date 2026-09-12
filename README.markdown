@@ -35,9 +35,9 @@ For further information on the state of this project please see https://github.c
 
 ---
 
-A lightweight nearly-zero-configuration object-relational mapper and fluent query builder for PHP5 and above.
+A lightweight nearly-zero-configuration object-relational mapper and fluent query builder for PHP.
 
-Tested on PHP 5.2.0+ - may work on earlier versions with PDO and the correct database drivers.
+This is Prepmock's fork. From 2.0 it requires **PHP 8.0 or later** and is tested on 8.0 to 8.3; upstream Idiorm's 1.x line kept PHP 5.2 support, and v1.0.0 of this fork still does.
 
 Released under a [BSD license](https://en.wikipedia.org/wiki/BSD_licenses).
 
@@ -107,6 +107,13 @@ A deprecation fails the suite rather than being reported and ignored (see
 
 Changelog
 ---------
+
+#### Prepmock 2.0.0 - unreleased
+
+* Require PHP 8.0 or later
+* Real return types on the `ArrayAccess`, `Countable` and `IteratorAggregate` methods of `ORM` and `IdiormResultSet`, replacing `#[\ReturnTypeWillChange]`
+* `IdiormResultSet` no longer implements the deprecated `Serializable` interface. Its `__serialize()` returns an array: it returned a string, so `serialize()` on a result set threw a `TypeError`, and `__unserialize()` now restores the results it was given instead of discarding them. `serialize()` and `unserialize()` remain as plain methods
+* Test suite on PHPUnit 9 with deprecations failing the run; CI on PHP 8.0 to 8.3
 
 #### 1.5.8 - released 2022-07-18
 
