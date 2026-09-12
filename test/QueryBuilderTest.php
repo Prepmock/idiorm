@@ -1,8 +1,8 @@
 <?php
 
-class QueryBuilderTest extends PHPUnit_Framework_TestCase {
+class QueryBuilderTest extends \PHPUnit\Framework\TestCase {
 
-    public function setUp() {
+    public function setUp(): void {
         // Enable logging
         ORM::configure('logging', true);
 
@@ -11,7 +11,7 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
         ORM::set_db($db);
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         ORM::reset_config();
         ORM::reset_db();
     }
