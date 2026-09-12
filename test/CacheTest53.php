@@ -1,10 +1,10 @@
 <?php
 
-class CacheTest53 extends PHPUnit_Framework_TestCase {
+class CacheTest53 extends \PHPUnit\Framework\TestCase {
 
     const ALTERNATE = 'alternate'; // Used as name of alternate connection
 
-    public function setUp() {
+    public function setUp(): void {
         // Set up the dummy database connections
         ORM::set_db(new MockPDO('sqlite::memory:'));
         ORM::set_db(new MockDifferentPDO('sqlite::memory:'), self::ALTERNATE);
@@ -16,7 +16,7 @@ class CacheTest53 extends PHPUnit_Framework_TestCase {
         ORM::configure('caching', true, self::ALTERNATE);
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         ORM::reset_config();
         ORM::reset_db();
     }

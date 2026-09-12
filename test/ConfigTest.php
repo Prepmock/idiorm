@@ -1,8 +1,8 @@
 <?php
 
-class ConfigTest extends PHPUnit_Framework_TestCase {
+class ConfigTest extends \PHPUnit\Framework\TestCase {
 
-    public function setUp() {
+    public function setUp(): void {
         // Enable logging
         ORM::configure('logging', true);
 
@@ -13,7 +13,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase {
         ORM::configure('id_column', 'primary_key');
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         ORM::reset_config();
         ORM::reset_db();
     }

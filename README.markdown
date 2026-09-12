@@ -97,12 +97,13 @@ foreach ($tweets as $tweet) {
 Tests
 -----
 
-Tests are written with PHPUnit and be run through composer
+Tests are written with PHPUnit 9 and run through composer
 
+    composer install
     composer test
 
-To make testing on PHP 5.2 (Idiorm maintains support back to this version of PHP) there
-is a Docker setup in `./test/docker_for_php52` - check the readme in there for more.
+A deprecation fails the suite rather than being reported and ignored (see
+`convertDeprecationsToExceptions` in `phpunit.xml`).
 
 Changelog
 ---------

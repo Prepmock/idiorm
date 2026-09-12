@@ -6,12 +6,17 @@ require_once dirname(__FILE__) . '/../idiorm.php';
  *
  * Mock version of the PDOStatement class.
  *
+ * The method signatures copy PDOStatement's own, types included. PHP 8.1 gave
+ * the internal classes tentative return types, so an override written without
+ * them raises a deprecation on every test run — noise that would bury a real
+ * deprecation coming from idiorm itself, which is what this suite exists to catch.
+ *
  */
 class MockPDOStatement extends PDOStatement {
    private $current_row = 0;
    private $statement = NULL;
    private $bindParams = array();
-   
+
    /**
     * Store the statement that gets passed to the constructor
     */
@@ -21,8 +26,11 @@ class MockPDOStatement extends PDOStatement {
 
    /**
     * Check that the array
+    *
+    * Returns true, as a real statement does on success. The untyped version
+    * returned null, which only went unnoticed because nothing asserted on it.
     */
-   public function execute($params = NULL) {
+   public function execute(?array $params = null): bool {
        $count = 0;
        $m = array();
        if (is_null($params)) $params = $this->bindParams;
@@ -41,25 +49,27 @@ class MockPDOStatement extends PDOStatement {
                }
            }
        }
+       return true;
    }
 
    /**
     * Add data to arrays
     */
-   public function bindParam($paramno, &$param, $type = NULL, $maxlen = NULL, $driverdata = NULL)
+   public function bindParam(string|int $param, mixed &$var, int $type = PDO::PARAM_STR, int $maxLength = 0, mixed $driverOptions = null): bool
    {
        // Do check on type
-       if (!is_int($type) || ($type != PDO::PARAM_STR && $type != PDO::PARAM_NULL && $type != PDO::PARAM_BOOL && $type != PDO::PARAM_INT))
-           throw new Exception('Incorrect parameter type. Expected $type to be an integer.');
+       if ($type != PDO::PARAM_STR && $type != PDO::PARAM_NULL && $type != PDO::PARAM_BOOL && $type != PDO::PARAM_INT)
+           throw new Exception('Incorrect parameter type. Expected $type to be a PDO::PARAM_* constant.');
 
        // Add param to array
-       $this->bindParams[is_int($paramno) ? --$paramno : $paramno] = $param;
+       $this->bindParams[is_int($param) ? --$param : $param] = $var;
+       return true;
    }
-   
+
    /**
     * Return some dummy data
     */
-   public function fetch($fetch_style=PDO::FETCH_BOTH, $cursor_orientation=PDO::FETCH_ORI_NEXT, $cursor_offset=0) {
+   public function fetch(int $mode = PDO::FETCH_BOTH, int $cursorOrientation = PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed {
        if ($this->current_row == 5) {
            return false;
        } else {
@@ -80,12 +90,18 @@ class MockDifferentPDOStatement extends MockPDOStatement { }
  *
  */
 class MockPDO extends PDO {
-   
+
+   /**
+    * Declared rather than created on first assignment: PHP 8.2 deprecates
+    * dynamic properties.
+    */
+   public $last_query;
+
    /**
     * Return a dummy PDO statement
     */
-   public function prepare($statement, $driver_options=array()) {
-       $this->last_query = new MockPDOStatement($statement);
+   public function prepare(string $query, array $options = array()): PDOStatement|false {
+       $this->last_query = new MockPDOStatement($query);
        return $this->last_query;
    }
 }
@@ -99,8 +115,8 @@ class MockDifferentPDO extends MockPDO {
     /**
      * Return a dummy PDO statement
      */
-    public function prepare($statement, $driver_options = array()) {
-        $this->last_query = new MockDifferentPDOStatement($statement);
+    public function prepare(string $query, array $options = array()): PDOStatement|false {
+        $this->last_query = new MockDifferentPDOStatement($query);
         return $this->last_query;
     }
 }
@@ -113,21 +129,14 @@ class MockMsSqlPDO extends MockPDO {
     * If we are asking for the name of the driver, check if a fake one
     * has been set.
     */
-    public function getAttribute($attribute) {
+    public function getAttribute(int $attribute): mixed {
         if ($attribute == self::ATTR_DRIVER_NAME) {
             if (!is_null($this->fake_driver)) {
                 return $this->fake_driver;
             }
         }
-        
+
         return parent::getAttribute($attribute);
     }
-    
-}
 
-/**
- * Alias the test case class so that these same tests can run against PHPUnit >4
- */
-if (!class_exists('PHPUnit_Framework_TestCase')) {
-    class_alias('\PHPUnit\Framework\TestCase', 'PHPUnit_Framework_TestCase');
 }

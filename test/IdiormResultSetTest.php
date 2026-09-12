@@ -1,8 +1,8 @@
 <?php
 
-class IdiormResultSetTest extends PHPUnit_Framework_TestCase {
+class IdiormResultSetTest extends \PHPUnit\Framework\TestCase {
 
-    public function setUp() {
+    public function setUp(): void {
         // Enable logging
         ORM::configure('logging', true);
 
@@ -11,14 +11,14 @@ class IdiormResultSetTest extends PHPUnit_Framework_TestCase {
         ORM::set_db($db);
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         ORM::reset_config();
         ORM::reset_db();
     }
 
     public function testGet() {
         $IdiormResultSet = new IdiormResultSet();
-        $this->assertInternalType('array', $IdiormResultSet->get_results());
+        $this->assertIsArray($IdiormResultSet->get_results());
     }
 
     public function testConstructor() {

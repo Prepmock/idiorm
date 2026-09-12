@@ -1,8 +1,8 @@
 <?php
 
-class ORMTest extends PHPUnit_Framework_TestCase {
+class ORMTest extends \PHPUnit\Framework\TestCase {
 
-    public function setUp() {
+    public function setUp(): void {
         // Enable logging
         ORM::configure('logging', true);
 
@@ -11,7 +11,7 @@ class ORMTest extends PHPUnit_Framework_TestCase {
         ORM::set_db($db);
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         ORM::reset_config();
         ORM::reset_db();
     }
@@ -80,7 +80,7 @@ class ORMTest extends PHPUnit_Framework_TestCase {
         ORM::configure('return_result_sets', false);
         
         $result_set = ORM::for_table('test')->find_many();
-        $this->assertInternalType('array', $result_set);
+        $this->assertIsArray($result_set);
         $this->assertSame(count($result_set), 5);
     }
 
@@ -90,18 +90,14 @@ class ORMTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('MockPDOStatement', $statement);
     }
 
-    /**
-     * @expectedException IdiormMethodMissingException
-     */
     public function testInvalidORMFunctionCallShouldCreateException() {
+        $this->expectException(IdiormMethodMissingException::class);
         $orm = ORM::for_table('test');
         $orm->invalidFunctionCall();
     }
 
-    /**
-     * @expectedException IdiormMethodMissingException
-     */
     public function testInvalidResultsSetFunctionCallShouldCreateException() {
+        $this->expectException(IdiormMethodMissingException::class);
         $resultSet = ORM::for_table('test')->find_result_set();
         $resultSet->invalidFunctionCall();
     }
